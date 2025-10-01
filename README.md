@@ -1,527 +1,444 @@
-# forensic_tool
-🚀 COMO USAR:
-1. Instalação:
-bash
+🔍 Forensic Tool - Advanced Metadata Analysis
 
-# Criar ambiente virtual (opcional)
-python -m venv forensic_env
-source forensic_env/bin/activate  # Linux/Mac
-# ou
-forensic_env\Scripts\activate    # Windows
-
-# Instalar dependências
-pip install -r requirements.txt
-
-2. Modo Web Interface:
-bash
-
-# Interface básica
-python main.py --gui
-
-# Com autenticação
-python main.py --gui --auth
-
-# Em rede local
-python main.py --gui --host 0.0.0.0 --port 8080
-
-3. Modo Linha de Comando:
-bash
-
-# Análise rápida
-python main.py --cli /caminho/para/analisar
-
-# Com opções avançadas
-python main.py --cli /caminho/analise --threads 8 --max-size 512 --formato excel,csv --output ./relatorios
-
-4. Com autenticação:
-bash
-
-# Gerar token
-export FORENSIC_AUTH_TOKEN="seu_token_secreto_aqui"
-
-# Ou usar arquivo
-echo "seu_token_secreto_aqui" > forensic_tokens.txt
-
-✨ FUNCIONALIDADES:
-
-✅ Análise Completa de Metadados
-✅ Interface Web Moderna
-✅ Processamento em Lote
-✅ Exportação Múltipla (JSON/CSV/Excel)
-✅ Autenticação Segura
-✅ Navegação Segura
-✅ Banco de Dados SQLite
-✅ Progresso em Tempo Real
-✅ Tratamento Robusto de Erros
-
-O script está 100% funcional e pronto para uso! 🎉
-README.md
-🔍 Script Forense Avançado
-
-Ferramenta completa para análise forense de metadados com interface web automática
+A complete forensic metadata analysis tool with automated web interface
 
 https://img.shields.io/badge/Python-3.8%252B-blue
 https://img.shields.io/badge/License-MIT-green
 https://img.shields.io/badge/Version-2.0-orange
-📋 Índice
+https://img.shields.io/badge/Auto_Install-Enabled-brightgreen
+🌟 Overview
 
-    Visão Geral
+Forensic Tool is a comprehensive Python-based solution for digital forensics and metadata analysis. It provides both a modern web interface and command-line capabilities for efficient file metadata extraction and analysis.
+🎯 Use Cases
 
-    Características
+    Digital Forensics Investigations
 
-    Instalação
+    Security Audits
 
-    Uso Rápido
+    Incident Response
 
-    Modo Web Interface
+    Data Analysis
 
-    Modo Linha de Comando
+    Educational Purposes
 
-    Autenticação
+✨ Features
+🔍 Metadata Extraction
 
-    Formatos Suportados
+    Images: EXIF data, camera information, GPS coordinates
 
-    Estrutura do Projeto
+    Documents: PDF metadata, Office documents properties
 
-    API Documentation
+    Audio/Video: Codec information, duration, bitrates
 
-    Exemplos de Uso
+    Archives: Internal structure, file listings
 
-    Solução de Problemas
+🌐 Web Interface
 
-    Contribuição
+    Secure directory navigation
 
-    Licença
+    Real-time progress tracking
 
-🎯 Visão Geral
+    Interactive results visualization
 
-O Script Forense Avançado é uma ferramenta completa desenvolvida em Python para análise forense de metadados de arquivos. Oferece tanto uma interface web moderna quanto um modo linha de comando para análise rápida e eficiente.
-⚡ Para quem é esta ferramenta?
+    Multiple export formats
 
-    Profissionais de Forense Digital
-
-    Analistas de Segurança
-
-    Administradores de Sistemas
-
-    Investigadores Digitais
-
-    Estudantes de Cybersecurity
-
-✨ Características
-🔍 Análise de Metadados
-
-    Imagens: EXIF, formato, dimensões, metadados de câmera
-
-    Documentos: PDF, Word, Excel, PowerPoint, textos
-
-    Áudio: Codecs, duração, bitrate, metatags
-
-    Vídeo: Resolução, FPS, codecs, duração
-
-    Arquivos Compactados: ZIP, estrutura interna
-
-🌐 Interface Web
-
-    Navegação segura por diretórios
-
-    Progresso em tempo real
-
-    Visualização interativa de resultados
-
-    Exportação múltipla de formatos
-
-    Design responsivo
+    Responsive design
 
 ⚡ Performance
 
-    Processamento multi-thread
+    Multi-threaded processing
 
-    Banco de dados SQLite para grandes volumes
+    SQLite database for large volumes
 
-    Streaming de arquivos para evitar estouro de memória
+    Memory-efficient streaming
 
-    Limites de segurança configuráveis
+    Configurable security limits
 
-🔒 Segurança
+🔒 Security
 
-    Autenticação por token opcional
+    Optional token authentication
 
-    Proteção contra path traversal
+    Path traversal protection
 
-    CORS configurável
+    Configurable CORS
 
-    Diretórios restritos
+    Restricted directory access
 
-    Logs detalhados
+    Detailed logging
 
-🚀 Instalação
-Pré-requisitos
+🤖 Auto-Installation
 
-    Python 3.8 ou superior
+    Automatic dependency checking
 
-    pip (gerenciador de pacotes Python)
+    One-click installation
 
-1. Clone ou baixe os arquivos
+    Self-healing setup
+
+    No manual configuration needed
+
+⚡ Quick Start
+Prerequisites
+
+    Python 3.8 or higher
+
+    pip package manager
+
+Automatic Installation & Usage
 bash
 
-git clone https://github.com/seu-usuario/script-forense.git
-cd script-forense
+# Clone the repository
+git clone https://github.com/Santosxbk/forensic_tool.git
+cd forensic_tool
 
-2. Instale as dependências
+# Run directly - dependencies install automatically!
+python main.py --gui
+
+That's it! The script will automatically:
+
+    ✅ Check for required dependencies
+
+    ✅ Install missing packages
+
+    ✅ Configure everything automatically
+
+    ✅ Launch the web interface
+
+Manual Installation (Optional)
 bash
 
+# Install dependencies manually if preferred
 pip install -r requirements.txt
 
-📦 Dependências Instaladas
-Biblioteca	Função
-Pillow	Análise de imagens e EXIF
-pypdf2	Leitura de metadados de PDF
-python-docx	Análise de documentos Word
-openpyxl	Processamento de planilhas Excel
-python-pptx	Análise de apresentações PowerPoint
-mutagen	Metadados de áudio
-opencv-python	Análise de vídeos
-python-magic	Detecção de tipo MIME
-pandas	Exportação e análise de dados
-tqdm	Barras de progresso
-💡 Uso Rápido
-Modo Web (Recomendado para análise interativa)
+🚀 Usage
+Web Interface (Recommended)
 bash
 
+# Basic interface (auto-installs dependencies)
 python main.py --gui
 
-Modo CLI (Para análise em lote)
-bash
-
-python main.py --cli /caminho/para/analise
-
-🌐 Modo Web Interface
-Comandos Disponíveis
-bash
-
-# Interface básica
-python main.py --gui
-
-# Servidor em rede local
+# Network access
 python main.py --gui --host 0.0.0.0 --port 8080
 
-# Com autenticação
+# With authentication
 python main.py --gui --auth
 
-# Sem abrir navegador automaticamente
+# No automatic browser
 python main.py --gui --no-browser
 
-# Origens CORS personalizadas
-python main.py --gui --allowed-origins "http://localhost:8000,http://meusite.com"
-
-Funcionalidades da Interface Web
-
-    Navegação Segura
-
-        Listagem de drives/diretórios
-
-        Preview de arquivos
-
-        Proteção contra caminhos perigosos
-
-    Análise em Tempo Real
-
-        Progresso visual com barras
-
-        Estatísticas atualizadas
-
-        Detalhes de processamento
-
-    Visualização de Resultados
-
-        Cards informativos por arquivo
-
-        Filtros por tipo
-
-        Paginação para grandes volumes
-
-    Exportação
-
-        JSON (completo)
-
-        CSV (estruturado)
-
-        Excel (formatado)
-
-⌨️ Modo Linha de Comando
-Sintaxe Básica
+Command Line Mode
 bash
 
-python main.py --cli CAMINHO [OPÇÕES]
+# Basic analysis
+python main.py --cli /path/to/files
 
-Opções do CLI
-Opção	Descrição	Padrão
---threads N	Número de threads	4
---max-size MB	Tamanho máximo por arquivo	1024 MB
---formato TIPOS	Formatos de saída	json,csv
---output DIR	Diretório de saída	diretório atual
-Exemplos Práticos
+# High-performance analysis
+python main.py --cli /path/to/files --threads 8 --max-size 2048
+
+# Multiple export formats
+python main.py --cli /path/to/files --formato json,csv,excel --output ./reports
+
+🔐 Authentication
+Setup Authentication
+
+Environment Variable (Recommended):
 bash
 
-# Análise básica
-python main.py --cli /home/usuario/documentos
-
-# Alta performance
-python main.py --cli /caminho/analise --threads 8 --max-size 2048
-
-# Exportação completa
-python main.py --cli /caminho/analise --formato json,csv,excel --output ./relatorios
-
-# Análise seletiva
-python main.py --cli /caminho/analise --formato json
-
-🔐 Autenticação
-Métodos de Autenticação
-
-    Variável de Ambiente (Recomendado)
-
-bash
-
-export FORENSIC_AUTH_TOKEN="seu_token_super_secreto_32_chars"
+export FORENSIC_AUTH_TOKEN="your_super_secret_token_32_chars"
 python main.py --gui --auth
 
-    Arquivo de Configuração
-
+Configuration File:
 bash
 
-echo "seu_token_super_secreto" > forensic_tokens.txt
+echo "your_super_secret_token" > forensic_tokens.txt
 python main.py --gui --auth
 
-    Geração Automática
-
+Auto-generation:
 bash
 
 python main.py --gui --auth
-# O token será gerado e exibido no console
+# Token will be generated and displayed in console
 
-Headers de Autenticação
-http
+📊 Supported Formats
+📷 Images
 
-Authorization: Bearer seu_token_super_secreto
+    JPEG/JPG, PNG, BMP, GIF, TIFF, WebP
 
-📁 Formatos Suportados
-🖼️ Imagens
+    EXIF metadata, camera info, GPS data
 
-    JPEG/JPG (.jpg, .jpeg) - Metadados EXIF completos
+📄 Documents
 
-    PNG (.png) - Informações de imagem
+    PDF (metadata, encryption, pages)
 
-    BMP (.bmp) - Dados básicos
+    Word (.docx, .doc) - author, dates, statistics
 
-    GIF (.gif) - Metadados animados
+    Excel (.xlsx, .xls) - sheets, structure
 
-    TIFF (.tiff, .tif) - Alto suporte a metadados
+    PowerPoint (.pptx, .ppt) - slides, layouts
 
-    WebP (.webp) - Formatos modernos
+    Text files (.txt, .rtf)
 
-📄 Documentos
+🎵 Media Files
 
-    PDF (.pdf) - Metadados, criptografia, páginas
+    Audio: MP3, FLAC, WAV, M4A, AAC, OGG
 
-    Word (.docx, .doc) - Autor, datas, estatísticas
+    Video: MP4, AVI, MKV, MOV, WMV
 
-    Excel (.xlsx, .xls) - Planilhas, abas, estrutura
+📦 Archives
 
-    PowerPoint (.pptx, .ppt) - Slides, layouts
+    ZIP, RAR, 7Z, TAR, GZ
 
-    Texto (.txt, .rtf) - Conteúdo, estatísticas
-
-🎵 Mídia
-
-    Áudio (.mp3, .flac, .wav, .m4a, .aac, .ogg) - Codecs, duração, tags
-
-    Vídeo (.mp4, .avi, .mkv, .mov, .wmv) - Resolução, FPS, codecs
-
-📦 Arquivos
-
-    Compactados (.zip, .rar, .7z) - Estrutura interna, conteúdo
-
-🗂️ Estrutura do Projeto
+🗂️ Project Structure
 text
 
-script_forense/
+forensic_tool/
 │
-├── 📄 main.py                 # Script principal e CLI
-├── 🔍 forensic_analyzer.py    # Módulo de análise forense
-├── 🌐 web_server.py          # Servidor web e interface
-├── 🗄️ database.py            # Gerenciamento de banco SQLite
-├── 🔐 auth_manager.py        # Sistema de autenticação
-├── 📋 requirements.txt       # Dependências do projeto
-├── 📊 forensic_results.db    # Banco de dados (gerado)
-├── 📝 forensic_tokens.txt    # Tokens (gerado)
-└── 📋 forensic_tool.log      # Logs da aplicação
+├── 📄 main.py                 # Main script with auto-install
+├── 🔍 forensic_analyzer.py    # Forensic analysis module
+├── 🌐 web_server.py          # Web server and interface
+├── 🗄️ database.py            # SQLite database management
+├── 🔐 auth_manager.py        # Authentication system
+├── 📋 requirements.txt       # Project dependencies
+├── 🔧 install_dependencies.py # Standalone installer
+│
+├── 📊 forensic_results.db    # Database (auto-generated)
+├── 📝 forensic_tokens.txt    # Tokens (auto-generated)
+└── 📋 forensic_tool.log      # Application logs
 
-Arquivos Gerados
-Arquivo	Descrição
-forensic_results.db	Banco SQLite com resultados
-forensic_tool.log	Logs de operação
-forensic_tokens.txt	Tokens de autenticação
-metadados_forense_*.json	Exportação JSON
-relatorio_forense_*.csv	Exportação CSV
-analise_forense_*.xlsx	Exportação Excel
+🔧 Auto-Installation System
+How It Works
+
+    Pre-flight Check - Verifies all required dependencies
+
+    Smart Detection - Identifies missing packages
+
+    Automatic Installation - Installs missing dependencies
+
+    Verification - Confirms successful installation
+
+    Execution - Runs the main application
+
+Supported Packages
+Package	Purpose	Auto-Install
+pillow	Image analysis & EXIF	✅
+pypdf2	PDF metadata	✅
+python-docx	Word documents	✅
+openpyxl	Excel spreadsheets	✅
+python-pptx	PowerPoint files	✅
+mutagen	Audio metadata	✅
+opencv-python	Video analysis	✅
+python-magic	MIME detection	✅
+pandas	Data export	✅
+tqdm	Progress bars	✅
+numpy	Numerical processing	✅
 🔌 API Documentation
-Endpoints Disponíveis
-🚀 Iniciar Análise
-http
-
-POST /api/analyze/{caminho}
-
-Resposta:
-json
-
-{
-  "analysis_id": "web_1640995200",
-  "status": "started",
-  "message": "Análise iniciada com sucesso"
-}
-
-📊 Status da Análise
-http
-
-GET /api/status/{analysis_id}
-
-Resposta:
-json
-
-{
-  "analysis_id": "web_1640995200",
-  "directory": "/caminho/analise",
-  "total_files": 150,
-  "processed_files": 45,
-  "status": "running",
-  "progress": 30.0
-}
-
-📋 Resultados
-http
-
-GET /api/results/{analysis_id}?limit=20&offset=0
-
-Resposta:
-json
-
-{
-  "analysis_id": "web_1640995200",
-  "results": [...],
-  "pagination": {
-    "limit": 20,
-    "offset": 0,
-    "total": 150
-  }
-}
-
-📈 Estatísticas
-http
-
-GET /api/stats/{analysis_id}
-
-Resposta:
-json
-
-{
-  "total_files": 150,
-  "successful": 145,
-  "failed": 5,
-  "type_distribution": {
-    "Imagem": 89,
-    "PDF": 23,
-    "Documento": 38
-  }
-}
-
-💾 Exportação
-http
-
-GET /api/export/{analysis_id}?format=json
-
-Download do arquivo correspondente
-💻 Exemplos de Uso
-Caso 1: Análise Forense Básica
+Endpoints
+Endpoint	Method	Description
+/api/drives	GET	List available drives
+/api/directory/{path}	GET	Browse directory contents
+/api/analyze/{path}	GET	Start analysis
+/api/status/{id}	GET	Check analysis status
+/api/results/{id}	GET	Get analysis results
+/api/stats/{id}	GET	Get analysis statistics
+/api/export/{id}	GET	Export results
+Example API Usage
 bash
 
-# Analisar documentos suspeitos
-python main.py --cli /home/usuario/Downloads/suspeitos --formato json,csv --output ./relatorio_forense
+# Start analysis
+curl -X GET "http://localhost:8000/api/analyze//home/user/documents"
 
-Caso 2: Auditoria de Sistema
+# Check status
+curl -X GET "http://localhost:8000/api/status/web_1640995200"
+
+# Get results
+curl -X GET "http://localhost:8000/api/results/web_1640995200?limit=10&offset=0"
+
+💡 Examples
+Example 1: Basic Forensic Analysis
 bash
 
-# Analisar diretório de usuário com autenticação
-export FORENSIC_AUTH_TOKEN="auditoria_2024_token"
+python main.py --cli /home/user/suspicious_files --formato json,csv --output ./forensic_report
+
+Example 2: System Audit
+bash
+
+export FORENSIC_AUTH_TOKEN="audit_2024_token"
 python main.py --gui --auth --host 0.0.0.0 --port 8080
 
-Caso 3: Processamento em Lote
+Example 3: Batch Processing
 bash
 
-# Múltiplos diretórios com script
 for dir in /data/disk1 /data/disk2 /data/disk3; do
-    python main.py --cli "$dir" --threads 6 --output "/relatorios/$(basename $dir)"
+    python main.py --cli "$dir" --threads 6 --output "/reports/$(basename $dir)"
 done
 
-Caso 4: Integração com Outras Ferramentas
+Example 4: Integration with Other Tools
 bash
 
-# Gerar JSON e processar com jq
-python main.py --cli /caminho/analise --formato json | jq '.[] | select(.Tipo == "PDF")'
+# Generate JSON and process with jq
+python main.py --cli /path/analysis --formato json | jq '.[] | select(.Tipo == "PDF")'
 
-🛠️ Solução de Problemas
-Problemas Comuns
-❌ "Biblioteca não instalada"
+🛠️ Troubleshooting
+Common Issues
 
-Solução:
+Dependencies not installing:
 bash
 
-# Instalar todas as dependências
+# The script auto-installs, but if you need manual intervention:
 pip install -r requirements.txt
 
-# Ou instalar manualmente
-pip install pillow pypdf2 python-docx openpyxl python-pptx mutagen opencv-python python-magic pandas tqdm
-
-❌ "Permissão negada"
-
-Solução:
+Permission errors:
 bash
 
-# No Linux/Mac
-sudo python main.py --cli /caminho/restrito
+# Linux/Mac - run with sudo
+sudo python main.py --cli /restricted/path
 
-# Ou alterar proprietário
-sudo chown $USER /caminho/restrito
+# Or change ownership
+sudo chown $USER /restricted/path
 
-❌ "Porta já em uso"
-
-Solução:
+Port already in use:
 bash
 
-# Usar porta diferente
 python main.py --gui --port 8081
 
-# Ou encontrar e matar processo
-lsof -ti:8000 | xargs kill -9
-
-❌ "Arquivo muito grande"
-
-Solução:
+File too large:
 bash
 
-# Aumentar limite de tamanho
-python main.py --cli /caminho --max-size 2048
+python main.py --cli /path --max-size 2048
 
-# Ou pular arquivos grandes
-python main.py --cli /caminho --max-size 512
+Logs and Debugging
 
-Logs e Debug
-
-Os logs detalhados são salvos em forensic_tool.log:
+Detailed logs are saved in forensic_tool.log:
 bash
 
-# Monitorar logs em tempo real
+# Monitor logs in real-time
 tail -f forensic_tool.log
 
-# Procurar erros específicos
+# Search for errors
 grep -i "error" forensic_tool.log
+
+# Check dependency installation
+grep -i "dependencies" forensic_tool.log
+
+Dependency Installation Issues
+
+If auto-installation fails:
+
+    Check Python version:
+    bash
+
+python --version
+# Should be 3.8 or higher
+
+Manual installation:
+bash
+
+pip install pillow pypdf2 python-docx openpyxl python-pptx mutagen opencv-python python-magic pandas tqdm numpy
+
+Use virtual environment:
+bash
+
+python -m venv forensic_env
+source forensic_env/bin/activate  # Linux/Mac
+forensic_env\Scripts\activate    # Windows
+pip install -r requirements.txt
+
+🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+    Fork the project
+
+    Create a feature branch (git checkout -b feature/AmazingFeature)
+
+    Commit your changes (git commit -m 'Add some AmazingFeature')
+
+    Push to the branch (git push origin feature/AmazingFeature)
+
+    Open a Pull Request
+
+Development Guidelines
+
+    Follow PEP 8 style guide
+
+    Add tests for new features
+
+    Update documentation
+
+    Use semantic commit messages
+
+    Ensure auto-installation works for new dependencies
+
+Adding New Dependencies
+
+When adding new features that require additional packages:
+
+    Update requirements.txt
+
+    Add to the dependencies dictionary in main.py
+
+    Test the auto-installation process
+
+    Update this README
+
+📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+👥 Authors
+
+    Santos - Initial work & auto-installation system - Santosxbk
+
+🙏 Acknowledgments
+
+    Thanks to all contributors who have helped with this project
+
+    Open source libraries that made this tool possible
+
+    Digital forensics community for inspiration and feedback
+
+    Python packaging ecosystem for reliable dependency management
+
+
+System Service (Linux)
+bash
+
+# Create service file
+sudo nano /etc/systemd/system/forensic-tool.service
+
+[Unit]
+Description=Forensic Tool Web Service
+After=network.target
+
+[Service]
+Type=simple
+User=forensic
+WorkingDirectory=/opt/forensic_tool
+ExecStart=/usr/bin/python3 main.py --gui --host 0.0.0.0 --port 8000 --auth
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# Enable and start service
+sudo systemctl enable forensic-tool
+sudo systemctl start forensic-tool
+
+🔄 Version
+Version 1.0
+
+    ✅ Auto-installation system
+
+    ✅ Modern web interface
+
+    ✅ Enhanced security features
+
+    ✅ Improved performance
+
+    ✅ Better error handling
+
+
+⭐ If you find this project useful, please give it a star on GitHub!
+
+Last updated: March 2024
+Version: 1.0
+*Python: 3.8+*
+Auto-Install: Enabled
