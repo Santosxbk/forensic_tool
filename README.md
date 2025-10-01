@@ -1,6 +1,6 @@
 🔍 Forensic Tool - Advanced Metadata Analysis
 
-A complete forensic metadata analysis tool with automated web interface
+A complete forensic metadata analysis tool with automated web interface.
 
 🌟 Overview
 
