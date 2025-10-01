@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-SCRIPT FORENSE AVANÇADO - MAIN PRINCIPAL
 Ferramenta completa para análise forense de metadados
 """
 
@@ -10,11 +9,82 @@ import argparse
 import logging
 import time
 import webbrowser
+import subprocess
+import importlib
 from pathlib import Path
 
-# Adicionar módulos locais ao path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+def install_dependencies():
+    """Verifica e instala dependências automaticamente"""
+    print("🔍 Verificando dependências...")
+    
+    dependencies = {
+        'PIL': 'pillow',
+        'PyPDF2': 'pypdf2',
+        'docx': 'python-docx',
+        'openpyxl': 'openpyxl',
+        'pptx': 'python-pptx',
+        'mutagen': 'mutagen',
+        'cv2': 'opencv-python',
+        'magic': 'python-magic',
+        'pandas': 'pandas',
+        'tqdm': 'tqdm',
+        'numpy': 'numpy'
+    }
+    
+    missing_deps = []
+    
+    for module, package in dependencies.items():
+        try:
+            importlib.import_module(module)
+            print(f"✅ {package} já instalado")
+        except ImportError:
+            print(f"❌ {package} não encontrado")
+            missing_deps.append(package)
+    
+    if missing_deps:
+        print(f"\n📦 Instalando {len(missing_deps)} dependências...")
+        try:
+            # Atualizar pip primeiro
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+            
+            # Instalar dependências
+            for package in missing_deps:
+                print(f"📥 Instalando {package}...")
+                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+            
+            print("✅ Todas as dependências foram instaladas com sucesso!")
+            
+            # Verificar novamente após instalação
+            for module, package in dependencies.items():
+                try:
+                    importlib.import_module(module)
+                    print(f"✅ {package} verificado")
+                except ImportError as e:
+                    print(f"❌ Falha ao instalar {package}: {e}")
+                    return False
+                    
+            return True
+            
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Erro durante a instalação: {e}")
+            print("\n💡 Tente instalar manualmente:")
+            print("pip install pillow pypdf2 python-docx openpyxl python-pptx")
+            print("pip install mutagen opencv-python python-magic pandas tqdm numpy")
+            return False
+        except Exception as e:
+            print(f"❌ Erro inesperado: {e}")
+            return False
+    else:
+        print("✅ Todas as dependências estão instaladas!")
+        return True
 
+# Verificar dependências antes de importar módulos locais
+if not install_dependencies():
+    print("\n❌ Não foi possível instalar todas as dependências.")
+    print("💡 Execute manualmente: pip install -r requirements.txt")
+    sys.exit(1)
+
+# Agora importar módulos locais
 try:
     from forensic_analyzer import ForensicAnalyzer, AnalysisManager
     from web_server import ForensicWebServer
