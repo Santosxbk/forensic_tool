@@ -2,10 +2,6 @@
 
 A complete forensic metadata analysis tool with automated web interface
 
-https://img.shields.io/badge/Python-3.8%252B-blue
-https://img.shields.io/badge/License-MIT-green
-https://img.shields.io/badge/Version-2.0-orange
-https://img.shields.io/badge/Auto_Install-Enabled-brightgreen
 🌟 Overview
 
 Forensic Tool is a comprehensive Python-based solution for digital forensics and metadata analysis. It provides both a modern web interface and command-line capabilities for efficient file metadata extraction and analysis.
