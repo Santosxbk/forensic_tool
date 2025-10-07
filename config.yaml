@@ -1,0 +1,56 @@
+# Configuração do Forensic Tool v2.0
+
+database:
+  path: "forensic_results.db"
+
+logging:
+  level: "INFO"
+  file_path: "forensic.log"
+  max_file_size_mb: 10
+  backup_count: 5
+  console_output: true
+  rich_console: true
+
+analysis:
+  thread_count: 4
+  max_files_per_analysis: 10000
+  max_file_size_mb: 100
+  chunk_size: 65536
+  hash_algorithms:
+    - "md5"
+    - "sha1" 
+    - "sha256"
+  supported_extensions:
+    images:
+      - ".jpg"
+      - ".jpeg"
+      - ".png"
+      - ".gif"
+      - ".bmp"
+      - ".tiff"
+      - ".webp"
+    documents:
+      - ".pdf"
+      - ".doc"
+      - ".docx"
+      - ".txt"
+      - ".rtf"
+      - ".odt"
+    media:
+      - ".mp3"
+      - ".mp4"
+      - ".avi"
+      - ".mkv"
+      - ".wav"
+      - ".flac"
+      - ".mov"
+
+security:
+  max_path_depth: 10
+  allow_symlinks: false
+  blocked_extensions:
+    - ".exe"
+    - ".bat"
+    - ".cmd"
+    - ".scr"
+    - ".pif"
