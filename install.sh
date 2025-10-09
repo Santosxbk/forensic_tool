@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Script de instalação do Forensic Tool v2.0
-# Autor: Santos (Refatorado)
-
+# Autor: Santosxbk
 set -e  # Sair em caso de erro
 
 echo "🔍 Forensic Tool v2.0 - Script de Instalação"
