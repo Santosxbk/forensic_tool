@@ -14,11 +14,10 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 from rich.panel import Panel
 from rich.text import Text
 from rich.live import Live
-import json
-
-from ..core import Config, AnalysisManager, get_config, load_config
-from ..utils import setup_logger
+from ..core import Config, AnalysisManager, ResultsDatabase
+from ..utils import setup_logger, get_forensic_logger
 from .reports import ReportGenerator
+from ..reporting import AdvancedReportGenerator, ReportConfig
 
 console = Console()
 
