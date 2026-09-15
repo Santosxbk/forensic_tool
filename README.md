@@ -107,6 +107,21 @@ forensic-tool analyze /caminho/para/diretorio --max-files 5000
 forensic-tool analyze /caminho/para/diretorio --output ./reports --formats json,csv,excel,html
 ```
 
+### Casos e cadeia de custódia
+
+O registro calcula SHA-256 antes da análise e mantém eventos append-only de registro e
+verificação. A ferramenta trabalha em modo somente leitura e não afirma validade jurídica
+automática.
+
+```bash
+forensic-tool version
+forensic-tool case create "Caso de triagem"
+forensic-tool case list
+forensic-tool evidence register ./evidencia.bin --case ID_DO_CASO --reason "recebimento"
+forensic-tool evidence verify ID_DA_EVIDENCIA
+forensic-tool evidence history ID_DA_EVIDENCIA
+```
+
 ### Detecção de Duplicatas
 
 ```bash

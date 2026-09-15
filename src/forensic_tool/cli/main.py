@@ -5,6 +5,7 @@ Interface de linha de comando para Forensic Tool
 import sys
 import time
 import signal
+import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 import click
@@ -14,7 +15,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 from rich.panel import Panel
 from rich.text import Text
 from rich.live import Live
-from ..core import Config, AnalysisManager, ResultsDatabase, get_config, load_config
+from ..core import Config, AnalysisManager, ResultsDatabase, get_config, load_config, EvidenceService
 from ..utils import setup_logger, get_forensic_logger
 from .reports import ReportGenerator
 from ..reporting import AdvancedReportGenerator, ReportConfig
@@ -424,6 +425,12 @@ class CLIManager:
 cli_manager = CLIManager()
 
 
+def _evidence_service() -> EvidenceService:
+    if cli_manager.analysis_manager is None:
+        raise click.ClickException("Gerenciador não inicializado")
+    return EvidenceService(cli_manager.analysis_manager.database)
+
+
 @click.group(invoke_without_command=True)
 @click.option('--config', '-c', help='Arquivo de configuração')
 @click.option('--log-level', default='INFO', help='Nível de log (DEBUG, INFO, WARNING, ERROR)')
@@ -444,6 +451,73 @@ def main(ctx, config, log_level, version):
     # Inicializar CLI manager
     if not cli_manager.initialize(config, log_level):
         sys.exit(1)
+
+
+@main.group()
+def case():
+    """Gerencia casos forenses."""
+
+
+@case.command("create")
+@click.argument("name")
+def case_create(name):
+    """Cria um caso e exibe seu identificador."""
+    try:
+        record = _evidence_service().create_case(name)
+        click.echo(json.dumps(record.to_dict(), ensure_ascii=False))
+    except (RuntimeError, ValueError) as error:
+        raise click.ClickException(str(error)) from error
+
+
+@case.command("list")
+def case_list():
+    """Lista casos registrados."""
+    click.echo(json.dumps(_evidence_service().list_cases(), ensure_ascii=False))
+
+
+@main.group()
+def evidence():
+    """Registra e verifica evidências sem modificar o original."""
+
+
+@evidence.command("register")
+@click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--case", "case_id", required=True, help="Identificador do caso")
+@click.option("--reason", default="triagem", show_default=True)
+@click.option("--operator", default="unknown", show_default=True)
+def evidence_register(path, case_id, reason, operator):
+    """Registra uma evidência e calcula SHA-256 antes do processamento."""
+    try:
+        record = _evidence_service().register(path, case_id, reason, operator)
+        click.echo(json.dumps(record.to_dict(), ensure_ascii=False))
+    except (FileNotFoundError, KeyError, ValueError, RuntimeError, OSError) as error:
+        raise click.ClickException(str(error)) from error
+
+
+@evidence.command("verify")
+@click.argument("evidence_id")
+def evidence_verify(evidence_id):
+    """Recalcula SHA-256 e informa se coincide com o valor registrado."""
+    try:
+        click.echo(json.dumps(_evidence_service().verify(evidence_id), ensure_ascii=False))
+    except (KeyError, OSError) as error:
+        raise click.ClickException(str(error)) from error
+
+
+@evidence.command("history")
+@click.argument("evidence_id")
+def evidence_history(evidence_id):
+    """Exibe os eventos append-only da cadeia de custódia."""
+    try:
+        click.echo(json.dumps(_evidence_service().history(evidence_id), ensure_ascii=False))
+    except KeyError as error:
+        raise click.ClickException(str(error)) from error
+
+
+@main.command("version")
+def version_command():
+    """Exibe a versão instalada da ferramenta."""
+    click.echo(f"Forensic Tool {__version__}")
 
 
 @main.command()

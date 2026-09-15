@@ -12,7 +12,7 @@ import json
 import threading
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple, Union
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from contextlib import contextmanager
 from dataclasses import dataclass, asdict
@@ -155,6 +155,53 @@ class ResultsDatabase:
                         FOREIGN KEY (session_id) REFERENCES analysis_sessions (session_id) ON DELETE CASCADE
                     )
                 """)
+
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS schema_version (
+                        version INTEGER PRIMARY KEY,
+                        applied_at TEXT NOT NULL
+                    )
+                """)
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS cases (
+                        case_id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        status TEXT NOT NULL DEFAULT 'open',
+                        created_at TEXT NOT NULL
+                    )
+                """)
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS evidence (
+                        evidence_id TEXT PRIMARY KEY,
+                        case_id TEXT NOT NULL,
+                        source_name TEXT NOT NULL,
+                        source_path TEXT NOT NULL,
+                        relative_path TEXT,
+                        file_size INTEGER NOT NULL,
+                        sha256 TEXT NOT NULL,
+                        additional_hashes_json TEXT NOT NULL DEFAULT '{}',
+                        acquired_at TEXT NOT NULL,
+                        operator TEXT NOT NULL,
+                        acquisition_reason TEXT NOT NULL,
+                        status TEXT NOT NULL DEFAULT 'registered',
+                        FOREIGN KEY (case_id) REFERENCES cases(case_id)
+                    )
+                """)
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS custody_events (
+                        event_id TEXT PRIMARY KEY,
+                        evidence_id TEXT NOT NULL,
+                        sequence INTEGER NOT NULL,
+                        event_type TEXT NOT NULL,
+                        actor TEXT NOT NULL,
+                        timestamp TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        details_json TEXT NOT NULL DEFAULT '{}',
+                        UNIQUE(evidence_id, sequence),
+                        FOREIGN KEY (evidence_id) REFERENCES evidence(evidence_id)
+                    )
+                """)
+                cursor.execute("INSERT OR IGNORE INTO schema_version(version, applied_at) VALUES (?, ?)", (1, datetime.now().isoformat()))
                 
                 # Índices para acelerar consultas comuns
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_results_session ON analysis_results(session_id)")
@@ -164,6 +211,8 @@ class ResultsDatabase:
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_hashes_md5 ON file_hashes(hash_md5)")
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_hashes_sha256 ON file_hashes(hash_sha256)")
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_sessions_status ON analysis_sessions(status)")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_evidence_case ON evidence(case_id)")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_custody_evidence ON custody_events(evidence_id, sequence)")
                 
                 conn.commit()
                 logger.info(f"Banco de dados inicializado com sucesso em: {self.db_path}")
@@ -171,6 +220,101 @@ class ResultsDatabase:
         except Exception as e:
             logger.critical(f"Falha crítica ao inicializar o banco de dados: {e}", exc_info=True)
             raise
+
+    def create_case(self, case: Dict[str, Any]) -> bool:
+        try:
+            with self._get_connection() as conn:
+                conn.execute(
+                    "INSERT INTO cases(case_id, name, status, created_at) VALUES (?, ?, ?, ?)",
+                    (case['case_id'], case['name'], case.get('status', 'open'), case['created_at']),
+                )
+                conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False
+
+    def list_cases(self) -> List[Dict[str, Any]]:
+        with self._get_connection() as conn:
+            rows = conn.execute("SELECT case_id, name, status, created_at FROM cases ORDER BY created_at").fetchall()
+        return [dict(row) for row in rows]
+
+    def case_exists(self, case_id: str) -> bool:
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT 1 FROM cases WHERE case_id = ?", (case_id,)).fetchone()
+        return row is not None
+
+    def get_schema_version(self) -> int:
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT COALESCE(MAX(version), 0) FROM schema_version").fetchone()
+        return int(row[0])
+
+    def create_evidence(self, evidence: Dict[str, Any]) -> bool:
+        try:
+            with self._get_connection() as conn:
+                conn.execute(
+                    """INSERT INTO evidence
+                    (evidence_id, case_id, source_name, source_path, relative_path,
+                     file_size, sha256, additional_hashes_json, acquired_at, operator,
+                     acquisition_reason, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        evidence['evidence_id'], evidence['case_id'], evidence['source_name'],
+                        evidence['source_path'], evidence.get('relative_path'), evidence['file_size'],
+                        evidence['sha256'], json.dumps(evidence.get('additional_hashes', {})),
+                        evidence['acquired_at'], evidence['operator'], evidence['acquisition_reason'],
+                        evidence.get('status', 'registered'),
+                    ),
+                )
+                conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False
+
+    def get_evidence(self, evidence_id: str) -> Optional[Dict[str, Any]]:
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT * FROM evidence WHERE evidence_id = ?", (evidence_id,)).fetchone()
+        if row is None:
+            return None
+        result = dict(row)
+        result['additional_hashes'] = json.loads(result.pop('additional_hashes_json') or '{}')
+        return result
+
+    def append_custody_event(self, evidence_id: str, event_type: str, actor: str,
+                             description: str, details: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        try:
+            event_id = str(__import__('uuid').uuid4())
+            timestamp = datetime.now(timezone.utc).isoformat()
+            with self._get_connection() as conn:
+                row = conn.execute(
+                    "SELECT COALESCE(MAX(sequence), 0) + 1 FROM custody_events WHERE evidence_id = ?",
+                    (evidence_id,),
+                ).fetchone()
+                sequence = int(row[0])
+                conn.execute(
+                    """INSERT INTO custody_events
+                    (event_id, evidence_id, sequence, event_type, actor, timestamp, description, details_json)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (event_id, evidence_id, sequence, event_type, actor, timestamp, description, json.dumps(details, default=str)),
+                )
+                conn.commit()
+            return {'event_id': event_id, 'evidence_id': evidence_id, 'sequence': sequence,
+                    'event_type': event_type, 'actor': actor, 'timestamp': timestamp,
+                    'description': description, 'details': details}
+        except sqlite3.IntegrityError:
+            return None
+
+    def get_custody_events(self, evidence_id: str) -> List[Dict[str, Any]]:
+        with self._get_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM custody_events WHERE evidence_id = ? ORDER BY sequence",
+                (evidence_id,),
+            ).fetchall()
+        events = []
+        for row in rows:
+            event = dict(row)
+            event['details'] = json.loads(event.pop('details_json') or '{}')
+            events.append(event)
+        return events
     
     @contextmanager
     def _get_connection(self):

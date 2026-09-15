@@ -12,3 +12,16 @@ Dentro de um diretório `docs`, crie um arquivo `architecture.md` que detalhe a 
     *   **Analisadores (`analyzers/`):** Explique o padrão de design usado (ex: Strategy Pattern com uma classe base `BaseAnalyzer`) e como novos analisadores podem ser adicionados.
     *   **Utilitários (`utils/`):** Descreva os módulos utilitários e suas responsabilidades.
 *   **Decisões de Design:** Justifique as principais decisões de arquitetura, como a escolha do banco de dados, o uso de concorrência, etc.
+
+## Integridade e cadeia de custódia
+
+O SQLite mantém schema versionado (`schema_version`) e as entidades `cases`, `evidence`
+e `custody_events`. `EvidenceService` registra arquivos regulares sem abri-los para
+escrita, calcula SHA-256 em chunks e armazena tamanho, caminho, operador, motivo e
+timestamp UTC.
+
+Eventos de custódia possuem sequência única por evidência e são append-only na API.
+`evidence verify` recalcula o SHA-256 atual e registra explicitamente se houve divergência.
+
+Esta evolução não declara validade jurídica automática. Busca correlacional, timeline
+unificada, API local e isolamento por processo permanecem fases futuras.
