@@ -42,7 +42,9 @@ class AnalysisConfig:
                 'DOCUMENTOS': ['.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.txt', '.rtf'],
                 'AUDIO': ['.mp3', '.flac', '.wav', '.m4a', '.aac', '.ogg', '.wma'],
                 'VIDEO': ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm'],
-                'ARQUIVOS': ['.zip', '.rar', '.7z', '.tar', '.gz']
+                'ARQUIVOS': ['.zip', '.rar', '.7z', '.tar', '.gz'],
+                'REDE': ['.log', '.pcap', '.cap', '.conf', '.cfg', '.access', '.error', '.auth', '.syslog'],
+                'SEGURANCA': ['.bin', '.dll', '.so', '.dylib', '.jar', '.apk', '.dex', '.js', '.ps1', '.vbs']
             }
 
 

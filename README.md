@@ -1,4 +1,4 @@
-# 🔍 Forensic Tool v2.1
+# 🔍 Forensic Tool v2.0
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -8,7 +8,7 @@
 
 > **Uma ferramenta forense avançada e profissional para análise de metadados, segurança e rede**
 
-O Forensic Tool v2.1 é uma solução completa e moderna para análise forense de metadados, oferecendo suporte a múltiplos formatos de arquivo, análise de segurança avançada, detecção de malware, análise de logs de rede e relatórios visuais sofisticados. Ideal para investigadores digitais, analistas de segurança e profissionais de TI.
+O Forensic Tool v2.0 é uma solução modular para análise forense de metadados, conteúdo inerte e logs de rede. A análise de segurança é estática: nenhum arquivo analisado é executado e não há chamadas de rede.
 
 ## ✨ Principais Características
 
@@ -48,9 +48,8 @@ O Forensic Tool v2.1 é uma solução completa e moderna para análise forense d
 
 ### 🎨 **Interface e Relatórios Modernos**
 - **CLI rica** com barras de progresso em tempo real
-- **🆕 Relatórios HTML/PDF** com gráficos e visualizações
-- **🆕 Análise estatística** com matplotlib/seaborn
-- **Múltiplos formatos** de saída (JSON, CSV, Excel, HTML, PDF)
+- **Relatórios** em JSON, CSV, Excel e HTML
+- **Estatísticas** de sessão persistidas no SQLite
 - **Comandos intuitivos** e bem documentados
 
 ## 📋 Formatos Suportados
@@ -60,8 +59,8 @@ O Forensic Tool v2.1 é uma solução completa e moderna para análise forense d
 | **Imagens** | JPG, PNG, GIF, BMP, TIFF, WebP | Metadados EXIF, dimensões, qualidade |
 | **Documentos** | PDF, DOC, DOCX, TXT, RTF, ODT | Páginas, autor, propriedades |
 | **Mídia** | MP3, MP4, AVI, MKV, WAV, FLAC | Tags, duração, qualidade |
-| **🆕 Executáveis** | EXE, DLL, SCR, BAT, CMD, PS1 | Análise PE, detecção malware, entropy |
-| **🆕 Logs de Rede** | LOG, PCAP, CAP, ACCESS, ERROR | Análise de tráfego, detecção ataques |
+| **Segurança estática** | BIN, DLL, SO, JAR, APK, JS, PS1, VBS | Entropia, assinaturas, strings e risco |
+| **Logs de Rede** | LOG, PCAP, CAP, CONF, CFG, ACCESS, ERROR, AUTH | Logs web, SSH, firewall e PCAP básico |
 | **Outros** | Detecção automática via libmagic | Análise genérica de metadados |
 
 ## 🛠️ Instalação
@@ -97,39 +96,27 @@ pip3 install -e .
 ### Análise Básica
 
 ```bash
-# Análise completa com segurança e rede
-forensic-tool analyze /caminho/para/diretorio --include-security --include-network
-
-# Análise com configurações específicas
-forensic-tool analyze /caminho/para/diretorio --threads 8 --max-files 5000
+# Análise completa conforme config.yaml
+forensic-tool analyze /caminho/para/diretorio --max-files 5000
 ```
 
-### 🆕 Relatórios Avançados
+### Relatórios
 
 ```bash
-# Gerar relatório HTML com gráficos
-forensic-tool report session_id --format html --include-charts
-
-# Gerar relatório PDF completo
-forensic-tool report session_id --format pdf --include-security
-
-# Relatório JSON para integração
-forensic-tool report session_id --format json
+# Os relatórios são gerados pelo comando analyze
+forensic-tool analyze /caminho/para/diretorio --output ./reports --formats json,csv,excel,html
 ```
 
 ### Detecção de Duplicatas
 
 ```bash
 # Encontrar arquivos duplicados
-forensic-tool duplicates session_id --hash-type sha256 --output duplicatas.json
+forensic-tool duplicates --session session_id --hash-type sha256
 ```
 
-### 🆕 Estatísticas e Sessões
+### Sessões
 
 ```bash
-# Ver estatísticas detalhadas
-forensic-tool stats session_id
-
 # Listar sessões recentes
 forensic-tool sessions --limit 10
 
@@ -190,7 +177,7 @@ forensic-tool cleanup --days 30
 }
 ```
 
-### 🆕 Relatório Visual HTML
+### Relatório HTML
 ```html
 📊 Estatísticas da Sessão: session_20241007_143022
 
@@ -209,7 +196,7 @@ forensic-tool cleanup --days 30
 ### Arquivo de Configuração (config.yaml)
 
 ```yaml
-# Configuração do Forensic Tool v2.1
+# Configuração do Forensic Tool v2.0
 
 database:
   path: "forensic_results.db"
@@ -229,7 +216,7 @@ analysis:
     - "sha1" 
     - "sha256"
 
-# 🆕 Configurações de Segurança
+# Configurações de Segurança
 security:
   max_path_depth: 10
   allow_symlinks: false
@@ -240,19 +227,6 @@ security:
   enable_malware_detection: true
   entropy_threshold: 7.0
 
-# 🆕 Configurações de Rede
-network:
-  enable_log_analysis: true
-  max_log_lines: 50000
-  detect_attacks: true
-  suspicious_ip_threshold: 10
-
-# 🆕 Configurações de Relatórios
-reporting:
-  include_charts: true
-  chart_style: "seaborn"
-  color_palette: "viridis"
-  dpi: 300
 ```
 
 ## 🏗️ Arquitetura
@@ -305,16 +279,16 @@ pytest tests/test_network_analyzer.py -v
 
 ## 📈 Performance
 
-### Benchmarks v2.1
+### Benchmarks v2.0
 
-| Métrica | Versão 1.0 | Versão 2.0 | **Versão 2.1** | Melhoria Total |
+| Métrica | Versão 1.0 | **Versão 2.0** | Melhoria Total |
 |---------|-------------|-------------|-----------------|----------------|
-| **Velocidade** | 2 arquivos/s | 8 arquivos/s | **12 arquivos/s** | **6x mais rápido** |
-| **Memória** | 150MB | 80MB | **70MB** | **53% menos** |
-| **CPU** | 100% (1 core) | 75% (4 cores) | **60% (4 cores)** | **Melhor distribuição** |
-| **Formatos** | 5 tipos | 20+ tipos | **25+ tipos** | **5x mais formatos** |
-| **🆕 Segurança** | ❌ | ❌ | **✅ Completa** | **Novo recurso** |
-| **🆕 Rede** | ❌ | ❌ | **✅ Avançada** | **Novo recurso** |
+| **Velocidade** | 2 arquivos/s | **8 arquivos/s** | **4x mais rápido** |
+| **Memória** | 150MB | **80MB** | **47% menos** |
+| **CPU** | 100% (1 core) | **75% (4 cores)** | **Melhor distribuição** |
+| **Formatos** | 5 tipos | **20+ tipos** | **4x mais formatos** |
+| **Segurança** | Não disponível | **Análise estática** | **Novo recurso** |
+| **Rede** | Não disponível | **Logs e PCAP básico** | **Novo recurso** |
 
 ### 🆕 Recursos de Segurança
 
@@ -356,24 +330,9 @@ flake8 src/ tests/
 
 ## 📚 Documentação
 
-- 📖 **[Guia do Usuário](docs/user_guide.md)** - Tutorial completo
 - 🏗️ **[Arquitetura](docs/architecture.md)** - Detalhes técnicos
-- 🔌 **[API Reference](docs/api.md)** - Documentação da API
-- 🧪 **[Testes](docs/testing.md)** - Guia de testes
-- 🛡️ **[Segurança](docs/security.md)** - Análise de segurança
-- 🌐 **[Rede](docs/network.md)** - Análise de rede
 
 ## 📄 Changelog
-
-### v2.1.0 (2024-10-09) - 🆕 **NOVA VERSÃO**
-- 🛡️ **SecurityAnalyzer**: Detecção de malware e análise de entropy
-- 🌐 **NetworkAnalyzer**: Análise avançada de logs de rede
-- 📊 **AdvancedReportGenerator**: Relatórios HTML/PDF com gráficos
-- 📈 **Visualizações**: Integração matplotlib/seaborn
-- 🎯 **Risk Assessment**: Sistema de pontuação de risco
-- 🔍 **Attack Detection**: Detecção automática de padrões suspeitos
-- 💻 **Enhanced CLI**: Novos comandos (report, stats, sessions, cleanup)
-- 📊 **Statistical Analysis**: Análise estatística avançada
 
 ### v2.0.0 (2024-10-07)
 - 🚀 **Reestruturação completa** da arquitetura
@@ -403,35 +362,6 @@ flake8 src/ tests/
 - [ ] 📱 **App mobile** para análise remota
 - [ ] 🧠 **IA para classificação** automática de arquivos
 
-## 🆕 Novidades da v2.1
-
-### 🛡️ Análise de Segurança Avançada
-```bash
-# Detecta malware e analisa riscos
-forensic-tool analyze /suspicious/files --include-security
-
-# Relatório de segurança detalhado
-forensic-tool report session_id --include-security --format html
-```
-
-### 🌐 Análise de Logs de Rede
-```bash
-# Analisa logs de servidor web e firewall
-forensic-tool analyze /var/log --include-network
-
-# Detecta ataques automaticamente
-forensic-tool analyze /logs/apache --include-network --output attacks.json
-```
-
-### 📊 Relatórios Visuais
-```bash
-# Gera relatório HTML com gráficos
-forensic-tool report session_id --format html --include-charts
-
-# Exporta para PDF com visualizações
-forensic-tool report session_id --format pdf --include-charts
-```
-
 ## 📞 Suporte
 
 - 🐛 **Issues**: [GitHub Issues](https://github.com/Santosxbk/forensic_tool/issues)
@@ -459,7 +389,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 [![GitHub stars](https://img.shields.io/github/stars/Santosxbk/forensic_tool.svg?style=social&label=Star)](https://github.com/Santosxbk/forensic_tool)
 [![GitHub forks](https://img.shields.io/github/forks/Santosxbk/forensic_tool.svg?style=social&label=Fork)](https://github.com/Santosxbk/forensic_tool/fork)
 
-**🔍 Forensic Tool v2.1 - Análise Forense Profissional**
+**🔍 Forensic Tool v2.0 - Análise Forense Profissional**
 
 **Desenvolvido com ❤️ por [Santos](https://github.com/Santosxbk)**
 

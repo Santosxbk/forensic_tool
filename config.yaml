@@ -44,6 +44,27 @@ analysis:
       - ".wav"
       - ".flac"
       - ".mov"
+    rede:
+      - ".log"
+      - ".pcap"
+      - ".cap"
+      - ".conf"
+      - ".cfg"
+      - ".access"
+      - ".error"
+      - ".auth"
+      - ".syslog"
+    seguranca:
+      - ".bin"
+      - ".dll"
+      - ".so"
+      - ".dylib"
+      - ".jar"
+      - ".apk"
+      - ".dex"
+      - ".js"
+      - ".ps1"
+      - ".vbs"
 
 security:
   max_path_depth: 10

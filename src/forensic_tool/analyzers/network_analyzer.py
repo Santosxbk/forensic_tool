@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 import logging
 
-from .base import BaseAnalyzer, AnalysisResult
+from .base import BaseAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,9 @@ class NetworkAnalyzer(BaseAnalyzer):
         ),
         'generic_ip': re.compile(r'\b(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b')
     }
+
+    def __init__(self):
+        super().__init__("NetworkAnalyzer", self.SUPPORTED_EXTENSIONS)
     
     def can_analyze(self, file_path: Path) -> bool:
         """Verifica se o arquivo pode ser analisado por este analisador."""
@@ -71,57 +74,23 @@ class NetworkAnalyzer(BaseAnalyzer):
         
         return any(keyword in filename_lower for keyword in network_keywords)
     
-    def analyze(self, file_path: Path) -> AnalysisResult:
-        """Executa análise completa do arquivo de rede."""
-        try:
-            start_time = datetime.now()
+    def _analyze_file(self, file_path: Path) -> Dict[str, Any]:
+        """Analisa logs e cabeçalhos PCAP sem executar conteúdo do arquivo."""
+        file_type = self._detect_file_type(file_path)
+
+        if file_type == 'pcap':
+            metadata = self._analyze_pcap_file(file_path)
+        elif file_type in ['apache_access', 'nginx_access']:
+            metadata = self._analyze_web_log(file_path, file_type)
+        elif file_type == 'iptables':
+            metadata = self._analyze_firewall_log(file_path)
+        elif file_type == 'ssh_auth':
+            metadata = self._analyze_ssh_log(file_path)
+        else:
+            metadata = self._analyze_generic_log(file_path)
             
-            # Determina o tipo de arquivo
-            file_type = self._detect_file_type(file_path)
-            
-            # Executa análise específica baseada no tipo
-            if file_type == 'pcap':
-                metadata = self._analyze_pcap_file(file_path)
-            elif file_type in ['apache_access', 'nginx_access']:
-                metadata = self._analyze_web_log(file_path, file_type)
-            elif file_type == 'iptables':
-                metadata = self._analyze_firewall_log(file_path)
-            elif file_type == 'ssh_auth':
-                metadata = self._analyze_ssh_log(file_path)
-            else:
-                metadata = self._analyze_generic_log(file_path)
-            
-            # Adiciona informações gerais
-            metadata.update({
-                'file_type': file_type,
-                'analysis_type': 'NetworkAnalyzer',
-                'file_size': file_path.stat().st_size,
-                'last_modified': datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
-            })
-            
-            duration = (datetime.now() - start_time).total_seconds()
-            
-            return AnalysisResult(
-                success=True,
-                file_path=str(file_path),
-                file_name=file_path.name,
-                file_type=f"Network Log ({file_type})",
-                analysis_type="NetworkAnalyzer",
-                metadata=metadata,
-                analysis_duration=duration
-            )
-            
-        except Exception as e:
-            logger.error(f"Erro na análise de rede do arquivo {file_path}: {e}", exc_info=True)
-            return AnalysisResult(
-                success=False,
-                file_path=str(file_path),
-                file_name=file_path.name,
-                file_type="Network Log",
-                analysis_type="NetworkAnalyzer",
-                error_message=str(e),
-                analysis_duration=0
-            )
+        metadata['detected_log_type'] = file_type
+        return metadata
     
     def _detect_file_type(self, file_path: Path) -> str:
         """Detecta o tipo específico de arquivo de rede."""

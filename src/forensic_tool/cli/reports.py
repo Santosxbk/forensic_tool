@@ -56,6 +56,9 @@ class ReportGenerator:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         try:
+            output_dir = Path(output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
+
             # Obter dados da análise
             session = self.analysis_manager.get_analysis_session(session_id)
             results = self.analysis_manager.get_analysis_results(session_id, limit=100000)

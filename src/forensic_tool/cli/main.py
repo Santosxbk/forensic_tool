@@ -14,10 +14,11 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 from rich.panel import Panel
 from rich.text import Text
 from rich.live import Live
-from ..core import Config, AnalysisManager, ResultsDatabase
+from ..core import Config, AnalysisManager, ResultsDatabase, get_config, load_config
 from ..utils import setup_logger, get_forensic_logger
 from .reports import ReportGenerator
 from ..reporting import AdvancedReportGenerator, ReportConfig
+from .. import __version__
 
 console = Console()
 
@@ -432,7 +433,7 @@ def main(ctx, config, log_level, version):
     """🔍 Forensic Tool - Análise Forense de Metadados"""
     
     if version:
-        console.print("[bold green]Forensic Tool v2.0[/bold green]")
+        console.print(f"[bold green]Forensic Tool v{__version__}[/bold green]")
         console.print("Ferramenta avançada de análise forense de metadados")
         return
     

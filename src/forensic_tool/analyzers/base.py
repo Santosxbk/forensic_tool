@@ -5,9 +5,10 @@ Classe base abstrata para analisadores de arquivos
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Set
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 from datetime import datetime
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class AnalysisResult:
     success: bool
     error_message: Optional[str] = None
     analysis_duration: float = 0.0
-    timestamp: datetime = None
+    timestamp: datetime = field(default_factory=datetime.now)
     
     def __post_init__(self):
         if self.timestamp is None:
@@ -38,12 +39,27 @@ class AnalysisResult:
             'file_size': self.file_size,
             'file_type': self.file_type,
             'analysis_type': self.analysis_type,
-            'metadata': self.metadata,
+            'metadata': _json_safe(self.metadata),
             'success': self.success,
             'error_message': self.error_message,
             'analysis_duration': self.analysis_duration,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None
         }
+
+
+def _json_safe(value: Any) -> Any:
+    """Converte metadados comuns em valores serializáveis por JSON."""
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, datetime):
+        return value.isoformat()
+    try:
+        json.dumps(value)
+        return value
+    except (TypeError, ValueError):
+        return str(value)
 
 
 class BaseAnalyzer(ABC):
@@ -197,7 +213,19 @@ class BaseAnalyzer(ABC):
                 # Arquivos
                 '.zip': 'ZIP Archive', '.rar': 'RAR Archive',
                 '.7z': '7-Zip Archive', '.tar': 'TAR Archive',
-                '.gz': 'GZIP Archive'
+                '.gz': 'GZIP Archive',
+
+                # Rede e segurança estática
+                '.log': 'Network Log', '.pcap': 'PCAP Capture',
+                '.cap': 'Network Capture', '.conf': 'Network Configuration',
+                '.cfg': 'Network Configuration', '.access': 'Access Log',
+                '.error': 'Error Log', '.auth': 'Authentication Log',
+                '.syslog': 'System Log', '.bin': 'Binary Evidence',
+                '.dll': 'Windows Library', '.so': 'Shared Library',
+                '.dylib': 'macOS Library', '.jar': 'Java Archive',
+                '.apk': 'Android Package', '.dex': 'Dalvik Executable',
+                '.js': 'JavaScript Source', '.ps1': 'PowerShell Source',
+                '.vbs': 'VBScript Source'
             }
             
             return type_mapping.get(extension, f"Unknown ({extension})")
@@ -291,6 +319,9 @@ class AnalyzerRegistry:
         Args:
             analyzer: Instância do analisador
         """
+        if any(existing.get_name() == analyzer.get_name() for existing in self._analyzers):
+            return
+
         if analyzer not in self._analyzers:
             self._analyzers.append(analyzer)
             

@@ -15,15 +15,38 @@ import mmap
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(init=False)
 class HashResult:
     """Resultado do cálculo de hash"""
     algorithm: str
-    hash_value: str
+    hash_value: Optional[str]
     file_path: str
     file_size: int
-    calculation_time: float
-    error: Optional[str] = None
+    duration: float
+    error: Optional[str]
+    success: bool
+
+    def __init__(self, algorithm: str, hash_value: Optional[str] = None,
+                 file_path: str = "", file_size: int = 0,
+                 calculation_time: Optional[float] = None,
+                 duration: Optional[float] = None, error: Optional[str] = None,
+                 success: Optional[bool] = None):
+        self.algorithm = algorithm
+        self.hash_value = hash_value
+        self.file_path = file_path
+        self.file_size = file_size
+        self.duration = duration if duration is not None else (calculation_time or 0.0)
+        self.error = error
+        self.success = (error is None) if success is None else success
+
+    @property
+    def calculation_time(self) -> float:
+        return self.duration
+
+    def __str__(self) -> str:
+        status = "success" if self.success else "error"
+        value = self.hash_value or ""
+        return f"{self.algorithm}: {status} {value} ({self.file_path})"
 
 
 class HashCalculator:
@@ -84,7 +107,7 @@ class HashCalculator:
             if algorithm not in self.SUPPORTED_ALGORITHMS:
                 return HashResult(
                     algorithm=algorithm,
-                    hash_value="",
+                    hash_value=None,
                     file_path=str(file_path),
                     file_size=0,
                     calculation_time=0,
@@ -95,7 +118,7 @@ class HashCalculator:
             if not file_path.exists() or not file_path.is_file():
                 return HashResult(
                     algorithm=algorithm,
-                    hash_value="",
+                    hash_value=None,
                     file_path=str(file_path),
                     file_size=0,
                     calculation_time=0,
@@ -108,7 +131,7 @@ class HashCalculator:
             if file_size > self.max_file_size_bytes:
                 return HashResult(
                     algorithm=algorithm,
-                    hash_value="",
+                    hash_value=None,
                     file_path=str(file_path),
                     file_size=file_size,
                     calculation_time=0,
@@ -141,7 +164,7 @@ class HashCalculator:
             
             return HashResult(
                 algorithm=algorithm,
-                hash_value="",
+                hash_value=None,
                 file_path=str(file_path),
                 file_size=file_path.stat().st_size if file_path.exists() else 0,
                 calculation_time=calculation_time,
@@ -170,7 +193,7 @@ class HashCalculator:
                 for algo in algorithms:
                     results[algo] = HashResult(
                         algorithm=algo,
-                        hash_value="",
+                        hash_value=None,
                         file_path=str(file_path),
                         file_size=0,
                         calculation_time=0,
@@ -186,7 +209,7 @@ class HashCalculator:
                 for algo in algorithms:
                     results[algo] = HashResult(
                         algorithm=algo,
-                        hash_value="",
+                        hash_value=None,
                         file_path=str(file_path),
                         file_size=file_size,
                         calculation_time=0,
@@ -224,7 +247,7 @@ class HashCalculator:
             for algo in algorithms:
                 results[algo] = HashResult(
                     algorithm=algo,
-                    hash_value="",
+                    hash_value=None,
                     file_path=str(file_path),
                     file_size=0,
                     calculation_time=0,
@@ -232,6 +255,15 @@ class HashCalculator:
                 )
         
         return results
+
+    def calculate_md5(self, file_path: Path) -> HashResult:
+        return self.calculate_single_hash(file_path, 'md5')
+
+    def calculate_sha1(self, file_path: Path) -> HashResult:
+        return self.calculate_single_hash(file_path, 'sha1')
+
+    def calculate_sha256(self, file_path: Path) -> HashResult:
+        return self.calculate_single_hash(file_path, 'sha256')
     
     def calculate_batch_hashes(self, 
                              file_paths: List[Path], 
@@ -276,7 +308,7 @@ class HashCalculator:
                         for algo in algorithms:
                             error_results[algo] = HashResult(
                                 algorithm=algo,
-                                hash_value="",
+                                hash_value=None,
                                 file_path=file_path,
                                 file_size=0,
                                 calculation_time=0,

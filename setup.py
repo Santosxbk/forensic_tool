@@ -80,7 +80,6 @@ setup(
     entry_points={
         "console_scripts": [
             "forensic-tool=forensic_tool.cli.main:main",
-            "forensic-web=forensic_tool.web.server:main",
         ],
     },
     include_package_data=True,

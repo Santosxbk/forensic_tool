@@ -44,7 +44,7 @@ class FileValidator:
             logger.warning(f"Magic não disponível: {e}")
             self.mime_detector = None
     
-    def validate_path(self, path: Path) -> Tuple[bool, str]:
+    def validate_path(self, path: Path) -> Tuple[bool, Optional[str]]:
         """
         Valida um caminho de arquivo ou diretório
         
@@ -55,7 +55,11 @@ class FileValidator:
             Tuple (é_válido, mensagem_erro)
         """
         try:
-            # Resolver caminho absoluto
+            path = Path(path)
+            if path.is_symlink() and not self.allow_symlinks:
+                return False, "Links simbólicos não são permitidos"
+
+            # Resolver caminho absoluto somente depois da checagem do link.
             abs_path = path.resolve()
             
             # Verificar se existe
@@ -67,20 +71,19 @@ class FileValidator:
             if len(parts) > self.max_path_depth:
                 return False, f"Caminho muito profundo (>{self.max_path_depth} níveis)"
             
-            # Verificar links simbólicos
-            if abs_path.is_symlink() and not self.allow_symlinks:
-                return False, "Links simbólicos não são permitidos"
-            
             # Verificar permissões de leitura
             if not os.access(abs_path, os.R_OK):
                 return False, "Sem permissão de leitura"
             
-            return True, ""
+            if abs_path.is_file():
+                return self._validate_file_rules(abs_path)
+
+            return True, None
             
         except Exception as e:
             return False, f"Erro na validação: {e}"
     
-    def validate_file(self, file_path: Path) -> Tuple[bool, str]:
+    def validate_file(self, file_path: Path) -> Tuple[bool, Optional[str]]:
         """
         Valida um arquivo específico
         
@@ -90,8 +93,8 @@ class FileValidator:
         Returns:
             Tuple (é_válido, mensagem_erro)
         """
-        # Validação básica de caminho
-        is_valid, error = self.validate_path(file_path)
+        # Validação básica de caminho, sem recursão para validate_path.
+        is_valid, error = self._validate_basic_path(file_path)
         if not is_valid:
             return False, error
         
@@ -100,26 +103,40 @@ class FileValidator:
             if not file_path.is_file():
                 return False, "Não é um arquivo"
             
-            # Verificar extensão bloqueada
-            extension = file_path.suffix.lower()
-            if extension in self.blocked_extensions:
-                return False, f"Extensão bloqueada: {extension}"
-            
-            # Verificar tamanho
-            file_size = file_path.stat().st_size
-            if file_size > self.max_file_size_bytes:
-                size_mb = file_size / (1024 * 1024)
-                max_mb = self.max_file_size_bytes / (1024 * 1024)
-                return False, f"Arquivo muito grande: {size_mb:.1f}MB (max: {max_mb}MB)"
-            
-            # Verificar se arquivo está vazio
-            if file_size == 0:
-                return False, "Arquivo vazio"
-            
-            return True, ""
+            return self._validate_file_rules(file_path)
             
         except Exception as e:
             return False, f"Erro na validação do arquivo: {e}"
+
+    def _validate_basic_path(self, path: Path) -> Tuple[bool, Optional[str]]:
+        """Valida existência, profundidade, links e leitura."""
+        path = Path(path)
+        if path.is_symlink() and not self.allow_symlinks:
+            return False, "Links simbólicos não são permitidos"
+        abs_path = path.resolve()
+        if not abs_path.exists():
+            return False, f"Caminho não existe: {path}"
+        if len(abs_path.parts) > self.max_path_depth:
+            return False, f"Caminho muito profundo (>{self.max_path_depth} níveis)"
+        if not os.access(abs_path, os.R_OK):
+            return False, "Sem permissão de leitura"
+        return True, None
+
+    def _validate_file_rules(self, file_path: Path) -> Tuple[bool, Optional[str]]:
+        if not file_path.is_file():
+            return False, "Não é um arquivo"
+        extension = file_path.suffix.lower()
+        blocked_extensions = {ext.lower() for ext in self.blocked_extensions}
+        if extension in blocked_extensions:
+            return False, f"Extensão bloqueada: {extension}"
+        file_size = file_path.stat().st_size
+        if file_size > self.max_file_size_bytes:
+            size_mb = file_size / (1024 * 1024)
+            max_mb = self.max_file_size_bytes / (1024 * 1024)
+            return False, f"Arquivo muito grande: {size_mb:.1f}MB (max: {max_mb}MB)"
+        if file_size == 0:
+            return False, "Arquivo vazio"
+        return True, None
     
     def is_supported_extension(self, extension: str, supported_extensions: Set[str]) -> bool:
         """Verifica se extensão é suportada"""

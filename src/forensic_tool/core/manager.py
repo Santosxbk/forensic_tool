@@ -79,6 +79,7 @@ class AnalysisManager:
             validator=self.file_validator,
             supported_extensions=self.config.get_supported_extensions()
         )
+        self._max_files = self.config.analysis.max_files_per_analysis
         
         self.hash_calculator = HashCalculator(
             chunk_size=self.config.analysis.chunk_size,
@@ -144,7 +145,8 @@ class AnalysisManager:
             
             # Escaneia e conta os arquivos para ter uma estimativa do trabalho
             logger.info(f"Contando arquivos no diretório: {directory}")
-            total_files = self.file_scanner.count_files(directory, max_count=max_files or self.config.analysis.max_files_per_analysis)
+            effective_max_files = max_files or self._max_files
+            total_files = self.file_scanner.count_files(directory, max_count=effective_max_files)
             
             if total_files == 0:
                 logger.warning(f"Nenhum arquivo suportado encontrado para análise em {directory}")
@@ -174,7 +176,7 @@ class AnalysisManager:
             # Inicia a análise em uma nova thread para não bloquear a aplicação
             analysis_thread = threading.Thread(
                 target=self._run_analysis,
-                args=(session_id, directory, include_hashes, max_files),
+                args=(session_id, directory, include_hashes, effective_max_files),
                 daemon=True,
                 name=f"Analysis-{session_id}"
             )
@@ -216,7 +218,7 @@ class AnalysisManager:
                 future_to_file = {}
                 
                 # Submete cada arquivo para análise no pool de threads
-                for file_path in self.file_scanner.scan_directory(directory, max_files=max_files):
+                for file_path in self.file_scanner.scan_directory(directory, max_files=max_files or self._max_files):
                     if self._shutdown_event.is_set():
                         logger.info(f"Análise {session_id} cancelada devido a um pedido de encerramento.")
                         break
@@ -364,7 +366,8 @@ class AnalysisManager:
                         self.config.analysis.hash_algorithms
                     )
                     
-                    hashes = {algo: res.hash_value for algo, res in hash_results.items() if not res.error}
+                    hashes = {algo: res.hash_value for algo, res in hash_results.items()
+                              if res.success and res.hash_value}
                     
                     if hashes:
                         result.metadata["hashes"] = hashes

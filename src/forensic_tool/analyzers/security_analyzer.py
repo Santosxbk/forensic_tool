@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional, Tuple, Set
 from datetime import datetime
 import logging
 
-from .base import BaseAnalyzer, AnalysisResult
+from .base import BaseAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +73,9 @@ class SecurityAnalyzer(BaseAnalyzer):
         r'[a-z]{10,}\.tk', r'[a-z]{10,}\.ml',  # Suspicious TLDs with random names
         r'temp-?mail', r'guerrilla-?mail',  # Temporary email services
     ]
+
+    def __init__(self):
+        super().__init__("SecurityAnalyzer", self.SUPPORTED_EXTENSIONS)
     
     def can_analyze(self, file_path: Path) -> bool:
         """Verifica se o arquivo pode ser analisado por este analisador."""
@@ -95,65 +98,24 @@ class SecurityAnalyzer(BaseAnalyzer):
         
         return False
     
-    def analyze(self, file_path: Path) -> AnalysisResult:
-        """Executa análise completa de segurança do arquivo."""
-        try:
-            start_time = datetime.now()
+    def _analyze_file(self, file_path: Path) -> Dict[str, Any]:
+        """Analisa o conteúdo inerte sem executar o arquivo."""
+        metadata = {
+            'security_analysis': True,
+            'last_modified': datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
+        }
+
+        metadata['entropy_analysis'] = self._calculate_entropy(file_path)
+        metadata['signature_analysis'] = self._check_malware_signatures(file_path)
+        metadata['strings_analysis'] = self._analyze_suspicious_strings(file_path)
+
+        if file_path.suffix.lower() in ['.exe', '.dll', '.scr']:
+            metadata['pe_analysis'] = self._analyze_pe_header(file_path)
+
+        metadata['url_analysis'] = self._analyze_urls_and_domains(file_path)
+        metadata['risk_assessment'] = self._calculate_risk_score(metadata)
             
-            metadata = {
-                'security_analysis': True,
-                'file_size': file_path.stat().st_size,
-                'last_modified': datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
-            }
-            
-            # Análise de entropy
-            entropy_data = self._calculate_entropy(file_path)
-            metadata['entropy_analysis'] = entropy_data
-            
-            # Detecção de assinaturas
-            signature_data = self._check_malware_signatures(file_path)
-            metadata['signature_analysis'] = signature_data
-            
-            # Análise de strings suspeitas
-            strings_data = self._analyze_suspicious_strings(file_path)
-            metadata['strings_analysis'] = strings_data
-            
-            # Análise de cabeçalho PE (se aplicável)
-            if file_path.suffix.lower() in ['.exe', '.dll', '.scr']:
-                pe_data = self._analyze_pe_header(file_path)
-                metadata['pe_analysis'] = pe_data
-            
-            # Análise de URLs e domínios
-            url_data = self._analyze_urls_and_domains(file_path)
-            metadata['url_analysis'] = url_data
-            
-            # Cálculo de score de risco
-            risk_score = self._calculate_risk_score(metadata)
-            metadata['risk_assessment'] = risk_score
-            
-            duration = (datetime.now() - start_time).total_seconds()
-            
-            return AnalysisResult(
-                success=True,
-                file_path=str(file_path),
-                file_name=file_path.name,
-                file_type=f"Security Analysis ({file_path.suffix or 'unknown'})",
-                analysis_type="SecurityAnalyzer",
-                metadata=metadata,
-                analysis_duration=duration
-            )
-            
-        except Exception as e:
-            logger.error(f"Erro na análise de segurança do arquivo {file_path}: {e}", exc_info=True)
-            return AnalysisResult(
-                success=False,
-                file_path=str(file_path),
-                file_name=file_path.name,
-                file_type="Security Analysis",
-                analysis_type="SecurityAnalyzer",
-                error_message=str(e),
-                analysis_duration=0
-            )
+        return metadata
     
     def _calculate_entropy(self, file_path: Path) -> Dict[str, Any]:
         """Calcula a entropy do arquivo para detectar compressão/criptografia."""

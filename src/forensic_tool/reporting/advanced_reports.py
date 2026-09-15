@@ -506,11 +506,9 @@ class AdvancedReportGenerator:
                 logger.info(f"Relatório PDF gerado: {output_path}")
                 return True
             except ImportError:
-                logger.warning("weasyprint não disponível, gerando PDF simples")
-                # Fallback: copia HTML como PDF (não é ideal, mas funciona)
-                output_path.write_text(temp_html.read_text(encoding='utf-8'), encoding='utf-8')
-                temp_html.unlink()
-                return True
+                logger.error("PDF não suportado: instale weasyprint para habilitar este formato")
+                temp_html.unlink(missing_ok=True)
+                return False
                 
         except Exception as e:
             logger.error(f"Erro ao gerar relatório PDF: {e}", exc_info=True)

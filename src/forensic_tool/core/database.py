@@ -321,15 +321,13 @@ class ResultsDatabase:
         """
         try:
             # Extrai os hashes do resultado, se existirem
-            hashes = result.get('hashes', {})
+            hashes = result.get('hashes') or result.get('metadata', {}).get('hashes', {})
             hash_md5 = hashes.get('md5')
             hash_sha1 = hashes.get('sha1')
             hash_sha256 = hashes.get('sha256')
             
             # Prepara os metadados para serem armazenados como uma string JSON
-            metadata = result.copy()
-            if 'hashes' in metadata: # Remove os hashes do JSON para evitar redundância
-                del metadata['hashes']
+            metadata = result.get('metadata', {})
             
             with self._get_connection() as conn:
                 cursor = conn.cursor()
@@ -594,7 +592,15 @@ class ResultsDatabase:
             Dict[str, List[str]]: Um dicionário onde as chaves são os hashes e os valores são listas de caminhos de arquivos duplicados.
         """
         try:
-            hash_column = f'hash_{hash_type.lower()}'
+            hash_columns = {
+                'md5': 'hash_md5',
+                'sha1': 'hash_sha1',
+                'sha256': 'hash_sha256',
+            }
+            hash_column = hash_columns.get(hash_type.lower())
+            if hash_column is None:
+                logger.warning(f"Tipo de hash não suportado: {hash_type}")
+                return {}
             
             with self._get_connection() as conn:
                 cursor = conn.cursor()
